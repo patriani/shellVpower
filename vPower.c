@@ -5,25 +5,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-char **trata_entrada(char *entrada) {
-    char *parsed; // recebe comando isolado
-    char **commando; // alocação dinamica que cria um vetor de endereços
-    int  cont = 0;  
-    char *separador = " "; // define um char separador de comandos
-
-    commando = malloc(8 * sizeof(char *)); 
-
-    parsed = strtok(entrada, separador); // leitura começa na entrada e vai até um " "
-    while (parsed != NULL) { // caso o retorno de strtok seja !=NULL (retornou um ponteiro para string terminada em NULL)
-        commando[cont] = parsed; // posição cont de commando recebe endereço do elemento apontado por parsed
-        cont++;
-
-        parsed = strtok(NULL, separador); // reinicia parsed
-    }
-
-    commando[cont] = NULL; // se entrou no while cont != 0, caso contrário o retorno eh NULL
-    return commando;
-}
+char **trata_entrada(char *entrada);
+int confere(char* comando); 
 
 int main() {
     char **comando; 
@@ -34,17 +17,19 @@ int main() {
     
     while(1){
         entrada = readline("shVpower> "); // printa esse texto e lê o que vier depois dele 
-        comando = trata_entrada(entrada); // recebe a entrada bruto e retorna o comando legível para execvp()
-        if(comando[0] == NULL){ // se a lista de comandos estiver vazia [...]
+        comando = trata_entrada(entrada); // recebe a entrada bruto e retorna array de comandos legível por execvp()
+
+        confere((*comando)); // verifica se eh um comando de saída ou cd
+        
+        if(!comando[0]){ // não aponta para nenhum comando[...]
+            printf("erro: Nenhum comando inserido\n");
             free(comando);
             free(entrada); 
-            printf("erro: Nenhum comando inserido\n");
-            continue;
+            continue; // próxima iteração e pede entrada novamente
         }else{
-        pid_filho = fork(); // cria processo para executar comando
+            pid_filho = fork(); // cria processo para executar comando
         if (pid_filho == 0) { // pid == 0 quando eh criado corretamente
             execvp(comando[0], comando);
-            printf("This won't be printed if execvp is successul\n");
         }else if(pid_filho == -1){ // 
             perror("fork");
             exit(EXIT_FAILURE);
@@ -61,13 +46,55 @@ int main() {
                 exit(EXIT_FAILURE);
             }
         }
+        //fpurge(stdin);
         entrada = NULL;
         free(comando);
         }
     }
 }
 
-/* w = waitpid(...) : 
-    Em caso de sucesso w é o pid do processo que teve seu estado alterado
-    código de erro == -1 
-*/
+char **trata_entrada(char *entrada) {
+    char *parsed; // recebe comando isolado
+    char **commando; // alocação dinamica que cria um vetor de endereços2
+    int  cont = 0;  
+    char *separador = " "; // define um char separador de comandos
+    int temp;
+    commando = malloc(8 * sizeof(char *));
+
+    parsed = strtok(entrada, separador); // leitura começa na entrada e vai até um " "
+
+    while (parsed != NULL) { // caso o retorno de strtok seja !=NULL (retornou um ponteiro para string terminada em NULL)
+        temp = strcmp(parsed,";");
+        if(temp != 0){ //não armazena o char de separação de comandos (";")
+            commando[cont] = parsed; // posição cont de commando recebe endereço do elemento apontado por parsed
+            printf("comando[%d] == %s",cont,commando[cont]);
+            cont++;
+        }
+        parsed = strtok(NULL, separador); // demais pesquisas por " " (faz essa separação até que encontre o final do vetor)
+    }
+    commando[cont] = NULL; // se entrou no while cont != 0, caso contrário o retorno eh NULL
+    return commando;
+}
+
+int confere(char* comando){
+    int conf1 = -1; // inicialização != 0
+    int conf2 = -1; // inicialização != 0
+
+    conf1 = strcmp(comando, "quit");
+    conf2 = strcmp(comando, "cd");
+
+    if(conf1 == 0){
+        exit(0);
+    }
+    if(conf2 == 0){
+        char* temp = &comando[1];
+        int str1 = strcmp(temp,"..");
+        if(str1 == 0){
+            chdir("..");
+        }
+        else{
+            chdir(comando);
+        }
+    }
+return 1;
+}
