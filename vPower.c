@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 
 char **trata_entrada(char *entrada);
-int confere(char* comando); 
+int confere(char* comando1, char* comando2); 
 int teste(char* novo);
 
 int main() {
@@ -33,14 +33,14 @@ int main() {
                 if(cat != 0){
                     quit = strcmp(comando[i],"quit");
                     if(quit == 0){ // se o comando lido for de saida paramos a leitura
-                        confere(comando[i]);
+                        confere(comando[i],NULL);
                     }
                     novo[j] = comando[i];
                     novo[j+1] = NULL; // caso seja o único comando recebido o array pode ser passado para execvp
                     j++;
                 }
                 if(cat == 0 || comando[i+1] == NULL){
-                    quit = confere(*novo); // caso o retorno for 1 o comando já foi executado 
+                    quit = confere(novo[0],novo[1]); // caso o retorno for 1 o comando já foi executado 
                     if(quit == 0){ // caso não seja cd ou quit
                         pid_filho = fork(); // cria processo para executar comando
                         if (pid_filho == 0) { // pid == 0 quando eh criado corretamente
@@ -99,39 +99,33 @@ char **trata_entrada(char *entrada) {
     commando[cont] = NULL; // se entrou no while cont != 0, caso contrário o retorno eh NULL
     return commando;
 }
-int confere(char* comando){
+int confere(char* comando1, char* comando2){ // duas entradas porque geralmente o cd vem acompanhado com ".." ou com diretorio
     int conf1 = -1; // inicialização != 0
     int conf2 = -1; // inicialização != 0
-    char **novo;
 
-    novo = malloc(8 * sizeof(char *));
-    novo = &comando;
+    printf("comando1 durante: %s\n",comando1);
+    printf("comando2 durante: %s\n",comando2);
 
-    //printf("novo[0] durante: %s",novo[0]);
-    //printf("novo[1] durante: %s",novo[1]);
+     conf1 = strcmp(comando1, "quit");
+     conf2 = strcmp(comando1, "cd");
 
-    // conf1 = strcmp(comando, "quit");
-    // conf2 = strcmp(comando, "cd");
-    // printf("\nquit: %d\n",conf1);
-    // printf("cd: %d\n",conf2);
-    // printf("temp: %s\n",comando[0]);
-
-    // if(conf1 == 0){
-    //     exit(0);
-    // }
-    // if(conf2 == 0){
-    //     //char* temp = &comando[];
-    //     printf("temp: %s\n",comando[2]);
-    //     int comp = strcmp(&comando[2],"..");
-    //     //printf("temp: %s\n",temp);
-    //     if(comp == 0){
-    //         chdir("..");
-    //         return 1;
-    //     }
-    //     else{
-    //         chdir(&comando[2]);
-    //         return 1;
-    //     }
-    // }
+    if(conf1 == 0){
+        exit(0);
+    }
+     if(conf2 == 0){
+         int comp = strcmp(comando2,"..");
+         if(comp == 0){
+             chdir("..");
+             return 1;
+         }
+        else if(comando2 != NULL){
+            chdir(comando2);
+            return 1;
+        }
+        else{
+            printf("\ncd: argumento de CD nao reconhecido");
+            return 0;
+        }
+     }
 return 0;
 }
