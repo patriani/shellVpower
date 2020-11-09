@@ -5,10 +5,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-char **trata_entrada(char *entrada);
-int confere(char* comando1, char* comando2); 
-int teste(char* novo);
-void flush();
+char **trata_entrada(char *entrada); // separa comando de parâmetro e de outros comandos
+int confere(char* comando1, char* comando2); // verifica se o comando eh um "cd [...] " ou "quit"
+void flush(); // limpa buffer
 
 int main() {
     char **comando; 
@@ -17,8 +16,8 @@ int main() {
     int wstatus; // armazenará status do processo filho
     int is_piped = -1;
     int piped = 0; // recebe retorno de pipe()
-    int fd[2];
-    int len = 0;
+    int fd[2]; // canais do pipe
+    int len = 0; 
     
     while(1){
 
@@ -26,14 +25,14 @@ int main() {
         entrada = readline("shVpower> "); // printa esse texto e lê o que vier depois dele 
         
         len = strlen(entrada);
-        if(len <= 512){
+        if(len <= 512){ // 512 eh o número máximo de caracteres aceitos. " " conta.
         comando = trata_entrada(entrada); // recebe a entrada bruto e retorna array de comandos legível por execvp() 
         }else{
             printf("erro: o limite de caracteres foi atingido\n");
             exit(-1);
         }
         
-        if(!comando[0]){ // não aponta para nenhum comando[...]
+        if(!comando[0]){ // não aponta para nenhum comando
             printf("erro: Nenhum comando inserido\n"); 
             continue; // próxima iteração e pede entrada novamente
         }
@@ -184,20 +183,20 @@ int confere(char* comando1, char* comando2){ // duas entradas porque geralmente 
      conf1 = strcmp(comando1, "quit");
      conf2 = strcmp(comando1, "cd");
 
-    if(conf1 == 0){
+    if(conf1 == 0){ // quit
         exit(0);
     }
-     if(conf2 == 0){
-         int comp = strcmp(comando2,"..");
+     if(conf2 == 0){ // cd
+         int comp = strcmp(comando2,".."); // cd ..
          if(comp == 0){
              chdir("..");
              return 1;
          }
-        else if(comando2 != NULL){
+        else if(comando2 != NULL){ // cd "diretorio"
             chdir(comando2);
             return 1;
         }
-        else{
+        else{ // caso não bata com nenhum diretorio listado e não seja ".."
             printf("\ncd: argumento de CD nao reconhecido");
             return 0;
         }
@@ -205,7 +204,7 @@ int confere(char* comando1, char* comando2){ // duas entradas porque geralmente 
 return 0;
 }
 
-void flush() { // limpa buffer
+void flush() { 
     int ch;
     while ( ( ch = fgetc ( stdin ) ) != EOF && ch != '\n' ) {}
 }
