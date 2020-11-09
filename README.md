@@ -4,16 +4,16 @@
 1.Geting executable file: To compilethe program insert "make" in your linux cmd and "./a.out" to execute.
 
 2.About inputs: This shell simulator accepts concatenation of commands with ';', pipe between two commands indicated by ',' and parameters;
-  - concatenation: [...]$ ls ; cd .. ; ls
+  - concatenation: shVpower> ls ; cd .. ; ls
   
-  - pipe : [...]$ ls -l , sort
+  - pipe : shVpower> ls -l , sort
   
-  - both : [...]$ ls , sort ; clear
+  - both : shVpower> ls , sort ; clear
   
   - quit : 
-    - [...]$ quit
-    - [...]$ quit ; ls (ls wont execute)
-    - [...]$ ls ; quit (print ls and quit)
+    - shVpower> quit
+    - shVpower> quit ; ls (ls wont execute)
+    - shVpower> ls ; quit (print ls and quit)
             
   
 PS: the space between command and ';' is important. Don't use without it, will not compile and request for a new input. Just one more thing. The limit of input lenght is 512.
