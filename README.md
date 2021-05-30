@@ -12,10 +12,10 @@
   
   - quit : 
     - shVpower> quit
-    - shVpower> quit ; ls (ls wont execute)
-    - shVpower> ls ; quit (print ls and quit)
+    - shVpower> quit ; ls ("ls" wont execute)
+    - shVpower> ls ; quit (print "ls" return and quit)
             
   
-PS: the space between command and ';' is important. Don't use without it, will not compile and request for a new input. Just one more thing. The limit of input lenght is 512.
+PS: the space between command and ';' is important. Don't use without it, will not compile and request for a new input. Just one more thing, the max limit of input lenght is 512.
 
      
